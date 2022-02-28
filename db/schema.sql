@@ -1,7 +1,7 @@
-DROP DATABASE IF EXISTS employeeTracker_DB;
-CREATE DATABASE employeeTracker_DB;
+DROP DATABASE IF EXISTS tracker;
+CREATE DATABASE tracker;
 
-USE employeeTracker_DB;
+USE tracker;
 
 CREATE TABLE departments(
   id INT NOT NULL AUTO_INCREMENT,
@@ -24,15 +24,6 @@ CREATE TABLE roles(
 INSERT INTO roles (title, salary, department_id)
 VALUES ("Sales Lead", "100000", 1), ("Salesperson", "80000", 1), ("Lead Engineer", "150000", 2), ("Software Engineer", "120000", 2), ("Accountant", "125000", 3), ("Legal Team Lead", "250000", 4), ("Lawyer", "190000", 4);
 
-CREATE TABLE managers(
-  id INT NOT NULL AUTO_INCREMENT,
-  first_name VARCHAR(30),
-  last_name VARCHAR(30),
-  PRIMARY KEY (id)
-);
-
-INSERT INTO managers (first_name, last_name)
-VALUES ("John", "Doe"), ("Mike", "Chan"), ("Ashley", "Rodriguez"), ("Sarah", "Lourd");
 
 CREATE TABLE employees(
   id INT NOT NULL AUTO_INCREMENT,
@@ -57,6 +48,6 @@ VALUES ("John", "Doe", 1, 3), ("Mike", "Chan", 2, 1), ("Ashley", "Rodriguez", 3,
 SELECT * FROM departments;
 SELECT * FROM roles;
 SELECT * FROM employees;
-SELECT * FROM managers;
+
 
 -- SELECT employees.id, employees.first_name, employees.last_name, managers.first_name AS ManagerFirstName FROM employees JOIN managers ON employees.manager_id = managers.id;

@@ -4,10 +4,10 @@ const cTable = require("console.table");
 
 var connection = mysql.createConnection({
   host: "localhost",
-  port: 3002,
+  port: 3306,
   user: "root",
   password: "4801594031-bp",
-  database: "employeetracker_DB"
+  database: "tracker"
 });
 
 connection.connect(function(err) {
@@ -63,8 +63,9 @@ const start = () => {
           return returnAllEmp();
         case "View All Employees by Department":
           return returnAllEmpDept(); /// OR es6 variant
-        case "View All Employees by Manager":
-          return returnAllEmpMngr();
+        // case "View All Employees by Manager":
+        //   return returnAllEmpMngr();
+    
         case "Add Employee":
           return addEmp();
         case "Add Department":
@@ -92,8 +93,7 @@ const returnAllEmp = () => {
     employees.first_name, 
     employees.last_name, 
     roles.title, 
-    roles.salary,
-    managers.first_name AS ManagerFirstName,    
+    roles.salary,    
     departments.name AS DepartmentName
     FROM 
       employees 
@@ -101,10 +101,6 @@ const returnAllEmp = () => {
       roles 
     ON 
       employees.role_id = roles.id
-    LEFT JOIN
-      managers
-    ON
-      employees.manager_id = managers.id
     LEFT JOIN 
       departments
     ON 
@@ -145,8 +141,7 @@ const returnAllEmpDeptES6 = async () => {
     const qryStr = `SELECT 
                       employees.id,
                       employees.first_name, 
-                      employees.last_name, 
-                      employees.manager_id, 
+                      employees.last_name,  
                       roles.title, 
                       roles.salary, 
                       departments.name as department
@@ -230,73 +225,66 @@ const returnAllEmpDept = () => {
   );
 };
 
-const returnAllEmpMngr = () => {
-  let query = connection.query(
-    `SELECT DISTINCT 
-      managers.first_name,
-      managers.id
-    FROM 
-      managers`,
-    function(err, res) {
-      if (err) throw err;
-      inquirer
-        .prompt([
-          {
-            type: "rawlist", //should be a list
-            message: "Manager Name:",
-            name: "managerName",
-            choices: function() {
-              var mngrArray = [];
-              for (var i = 0; i < res.length; i++) {
-                mngrArray.push(res[i].first_name);
-              }
-              return mngrArray;
-            }
-          }
-        ])
-        // )
-        .then(answer => {
-          let query = connection.query(
-            `SELECT 
-            employees.id, 
-            employees.first_name, 
-            employees.last_name, 
-            employees.manager_id, 
-            roles.title, 
-            roles.salary, 
-            departments.name as department,
-            managers.id,
-            managers.first_name as manager
-          FROM 
-            employees 
-          LEFT JOIN 
-            roles 
-          ON 
-            employees.role_id = roles.id 
-          LEFT JOIN 
-            departments 
-          ON 
-            roles.department_id = departments.id 
-          LEFT JOIN 
-            managers
-          ON 
-            managers.id = employees.manager_id
-          WHERE 
-            managers.first_name=?`,
-            [answer.managerName],
-            function(err, res) {
-              if (err) throw err;
-              // console.log(res);
-              const table = cTable.getTable(res);
-              console.log(`\n${table}`);
-              start();
-            }
-          );
-          console.log(query.sql);
-        });
-    }
-  );
-};
+// const returnAllEmpMngr = () => {
+//   let query = connection.query(
+//     `SELECT DISTINCT 
+//       managers.first_name,
+//       managers.id
+//     FROM 
+//       managers`,
+//     function(err, res) {
+//       if (err) throw err;
+//       inquirer
+//         .prompt([
+//           {
+//             type: "rawlist", //should be a list
+//             message: "Manager Name:",
+//             name: "managerName",
+//             choices: function() {
+//               var mngrArray = [];
+//               for (var i = 0; i < res.length; i++) {
+//                 mngrArray.push(res[i].first_name);
+//               }
+//               return mngrArray;
+//             }
+//           }
+//         ])
+//         // )
+//         .then(answer => {
+//           let query = connection.query(
+//             `SELECT 
+//             employees.id, 
+//             employees.first_name, 
+//             employees.last_name, 
+//             employees.manager_id, 
+//             roles.title, 
+//             roles.salary, 
+//             departments.name as department,
+//           FROM 
+//             employees 
+//           LEFT JOIN 
+//             roles 
+//           ON 
+//             employees.role_id = roles.id 
+//           LEFT JOIN 
+//             departments 
+//           ON 
+//             roles.department_id = departments.id 
+//           `,
+//             [answer.managerName],
+//             function(err, res) {
+//               if (err) throw err;
+//               // console.log(res);
+//               const table = cTable.getTable(res);
+//               console.log(`\n${table}`);
+//               start();
+//             }
+//           );
+//           console.log(query.sql);
+//         });
+//     }
+//   );
+// };
 
 const removeEmp = () => {
   // console.log("Remove an Employee");
@@ -346,9 +334,9 @@ const removeEmp = () => {
 const addEmpES6 = async () => {
   try {
     const roles = await query("SELECT title, id FROM roles");
-    const managers = await query(
-      "SELECT first_name, last_name, id FROM managers"
-    );
+    // const managers = await query(
+    //   "SELECT first_name, last_name, id FROM managers"
+    // );
     const answers = await inquirer.prompt([
       {
         type: "input",
@@ -379,15 +367,15 @@ const addEmpES6 = async () => {
         //   return roleArray;
         // }
       },
-      {
-        type: "rawlist",
-        message: "Who is your employee's manager?",
-        name: "manager_id",
-        choices: managers.map(mngr => ({
-          name: mngr.first_name + " " + mngr.last_name,
-          value: mngr.id
-        }))
-      }
+      //{
+        //type: "rawlist",
+        //message: "Who is your employee's manager?",
+        //name: "manager_id",
+        //choices: managers.map(mngr => ({
+         // name: mngr.first_name + " " + mngr.last_name,
+         // value: mngr.id
+        //}))
+      //}
     ]);
 
     const qryStr = `INSERT INTO employees SET ?`;
@@ -608,8 +596,7 @@ const updateEmpRole = () => {
       employees.first_name, 
       employees.last_name, 
       roles.title, 
-      roles.salary,
-      managers.first_name AS ManagerFirstName,    
+      roles.salary,    
       departments.name AS DepartmentName
     FROM 
       employees 
@@ -617,8 +604,6 @@ const updateEmpRole = () => {
       roles 
     ON 
       employees.role_id = roles.id
-    LEFT JOIN
-      managers
     ON
       employees.manager_id = managers.id
     LEFT JOIN 
@@ -697,8 +682,6 @@ const readEmpTable = () => {
       employees.first_name, 
       employees.last_name, 
       roles.title, roles.salary,
-      managers.first_name AS ManagerFirstName,
-      managers.last_name AS ManagerLastName,
       departments.name AS DepartmentName
     FROM 
       employees 
@@ -706,10 +689,6 @@ const readEmpTable = () => {
       roles 
     ON 
       employees.role_id = roles.id
-    LEFT JOIN
-      managers
-    ON
-      employees.manager_id = managers.id
     LEFT JOIN
       departments
     ON
